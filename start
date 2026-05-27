@@ -2,68 +2,62 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>NSI // NRF Interface</title>
+<title>NSI / NRF TERMINAL OS</title>
 <style>
   * { box-sizing: border-box; }
   body {
     margin: 0;
     font-family: "MS Sans Serif", system-ui, sans-serif;
-    background: #02040a;
+    background: #000;
     color: #e5e5e5;
     overflow: hidden;
   }
 
+  /* CRT + noise */
   body::before {
     content: "";
     position: fixed;
     inset: 0;
-    background: radial-gradient(circle at 20% 0%, #1b2333 0, #02040a 55%, #000000 100%);
+    background: radial-gradient(circle at 20% 0%, #111827 0, #02040a 55%, #000000 100%);
     mix-blend-mode: screen;
+    opacity: 0.7;
     pointer-events: none;
-    opacity: 0.9;
   }
   body::after {
     content: "";
     position: fixed;
-    inset: -50px;
+    inset: -40px;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='noStitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.12'/%3E%3C/svg%3E");
     mix-blend-mode: soft-light;
     pointer-events: none;
   }
 
-  #boot-screen, #login-screen, #desktop {
+  #bios, #boot, #login-screen, #desktop {
     position: fixed;
     inset: 0;
     display: none;
   }
 
-  #boot-screen {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    color: #cfd6e6;
-    background: #02040a;
-    text-align: center;
-  }
-  #boot-logo {
-    border: 1px solid #3b4a63;
-    padding: 24px 40px;
-    margin-bottom: 16px;
-    text-transform: uppercase;
-    letter-spacing: 0.18em;
-    font-size: 14px;
-  }
-  #boot-sub {
-    font-size: 11px;
-    opacity: 0.7;
-  }
-  #boot-status {
-    margin-top: 32px;
-    font-size: 11px;
-    opacity: 0.8;
+  /* BIOS screen (green text) */
+  #bios {
+    background: #020402;
+    color: #7bff7b;
+    font-family: "Courier New", monospace;
+    padding: 16px;
+    font-size: 13px;
+    text-shadow: 0 0 4px #00ff00;
   }
 
+  /* Bootloader (blue text) */
+  #boot {
+    background: #02040a;
+    color: #9fb3d9;
+    font-family: "Consolas", "Courier New", monospace;
+    padding: 16px;
+    font-size: 12px;
+  }
+
+  /* Login window (only after they enable it) */
   #login-screen {
     display: flex;
     align-items: center;
@@ -75,7 +69,6 @@
     border: 1px solid #3b4a63;
     box-shadow: 0 0 0 1px #0b101c, 0 18px 40px rgba(0,0,0,0.8);
     padding: 18px 20px 16px;
-    position: relative;
   }
   .login-title {
     font-size: 11px;
@@ -133,6 +126,7 @@
     color: #6c7a96;
   }
 
+  /* Desktop OS */
   #desktop {
     display: none;
     flex-direction: column;
@@ -140,10 +134,10 @@
   #desktop-area {
     flex: 1;
     position: relative;
-    padding: 10px;
+    padding: 8px;
   }
   #taskbar {
-    height: 26px;
+    height: 24px;
     background: linear-gradient(#050814, #02040a);
     border-top: 1px solid #3b4a63;
     display: flex;
@@ -160,23 +154,11 @@
     opacity: 0.8;
   }
 
-  .desktop-icon {
-    width: 90px;
-    text-align: center;
-    font-size: 10px;
-    color: #cfd6e6;
-    cursor: default;
-    position: absolute;
-  }
-  .desktop-icon span {
-    display: block;
-    margin-top: 4px;
-  }
-
+  /* File explorer style */
   .window {
     position: absolute;
-    width: 420px;
-    min-height: 180px;
+    width: 460px;
+    min-height: 200px;
     background: #050814;
     border: 1px solid #3b4a63;
     box-shadow: 0 18px 40px rgba(0,0,0,0.8);
@@ -210,44 +192,48 @@
     font-size: 11px;
     color: #d7dde9;
   }
-  .window-body pre {
+
+  .file-list {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .file-item {
+    width: 120px;
+    cursor: pointer;
+    font-size: 10px;
+    text-align: center;
+  }
+  .file-icon {
+    width: 32px;
+    height: 32px;
+    margin: 0 auto 4px;
+    background: #111827;
+    border: 1px solid #3b4a63;
+  }
+
+  .file-viewer {
     font-family: "Consolas", "Courier New", monospace;
     font-size: 10px;
     background: #02040a;
-    padding: 6px;
     border: 1px solid #1b2333;
-    overflow: auto;
+    padding: 6px;
     max-height: 220px;
+    overflow: auto;
     white-space: pre-wrap;
   }
-  .redacted {
-    background: #050814;
-    color: #050814;
-    border-bottom: 1px solid #b00000;
-    padding: 0 3px;
-  }
-  .redacted::selection {
-    background: #b00000;
-    color: #050814;
-  }
 
-  #glitch-overlay {
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    mix-blend-mode: screen;
-    opacity: 0;
-    background: repeating-linear-gradient(
-      to bottom,
-      rgba(0, 200, 255, 0.08),
-      rgba(0, 200, 255, 0.08) 1px,
-      transparent 1px,
-      transparent 3px
-    );
-    transition: opacity 0.15s ease-out;
+  .desktop-icon {
+    width: 90px;
+    text-align: center;
+    font-size: 10px;
+    color: #cfd6e6;
+    cursor: default;
+    position: absolute;
   }
-  .glitch-active {
-    opacity: 0.7 !important;
+  .desktop-icon span {
+    display: block;
+    margin-top: 4px;
   }
 
   .terminal {
@@ -282,24 +268,52 @@
     cursor: pointer;
   }
 
+  .redacted {
+    background: #050814;
+    color: #050814;
+    border-bottom: 1px solid #b00000;
+    padding: 0 3px;
+  }
+  .redacted::selection {
+    background: #b00000;
+    color: #050814;
+  }
+
+  #glitch-overlay {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    mix-blend-mode: screen;
+    opacity: 0;
+    background: repeating-linear-gradient(
+      to bottom,
+      rgba(0, 200, 255, 0.08),
+      rgba(0, 200, 255, 0.08) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+    transition: opacity 0.15s ease-out;
+  }
+  .glitch-active {
+    opacity: 0.7 !important;
+  }
+
   audio { display: none; }
 </style>
 </head>
 <body>
 
-<div id="boot-screen">
-  <div id="boot-logo">
-    NODAL SYSTEMS INSTITUTE<br />
-    <span style="font-size:10px; letter-spacing:0.24em;">NODAL RESEARCH FACILITIES</span>
-  </div>
-  <div id="boot-sub">INTERFACE BUILD 0.7B // FIELD OPS CHANNEL</div>
-  <div id="boot-status">INITIALIZING NODAL CORRIDORS...</div>
-</div>
+<!-- BIOS SCREEN -->
+<div id="bios"></div>
 
+<!-- BOOTLOADER SCREEN -->
+<div id="boot"></div>
+
+<!-- LOGIN (only appears after they enable it) -->
 <div id="login-screen">
   <div class="login-panel">
-    <div class="login-title">NSI // NRF INTERFACE</div>
-    <div class="login-sub">FIELD OPERATIONS ACCESS PORTAL — OWL CHANNEL</div>
+    <div class="login-title">NSI // NRF SECURE LOGIN</div>
+    <div class="login-sub">OWL FIELD OPERATIONS CHANNEL</div>
 
     <div class="login-field">
       <label for="user-id">USER ID</label>
@@ -312,53 +326,62 @@
     <button class="login-btn" onclick="attemptLogin()">ENGAGE INTERFACE</button>
     <div id="login-status"></div>
     <div class="login-hint">
-      Unauthorized access attempts are logged under Directive 7‑B.<br />
-      <span style="opacity:0.6;">// field‑op, guest, and owl channels are monitored.</span>
+      Secure login was previously disabled at the system level.<br />
+      You re‑enabled it. That means you accept the risk.
     </div>
   </div>
 </div>
 
+<!-- DESKTOP OS -->
 <div id="desktop">
   <div id="desktop-area">
-    <!-- Core icons -->
-    <div class="desktop-icon" style="top:10px; left:10px;" onclick="openWindow('node12a')">
-      <img style="width:32px; height:32px; background:#111827; border:1px solid #3b4a63;" />
-      <span>NODE 12A FILE</span>
+    <!-- Desktop icons: file explorer + external nodes -->
+    <div class="desktop-icon" style="top:10px; left:10px;" onclick="openWindow('explorer')">
+      <div class="file-icon"></div>
+      <span>FILE SYSTEM</span>
     </div>
-    <div class="desktop-icon" style="top:80px; left:10px;" onclick="openWindow('owlterm')">
-      <img style="width:32px; height:32px; background:#111827; border:1px solid #3b4a63;" />
-      <span>OWL TERMINAL</span>
+    <div class="desktop-icon" style="top:80px; left:10px;" onclick="openExternal('merch')">
+      <div class="file-icon"></div>
+      <span>MERCH NODE</span>
     </div>
-    <div class="desktop-icon" style="top:150px; left:10px;" onclick="openWindow('about')">
-      <img style="width:32px; height:32px; background:#111827; border:1px solid #3b4a63;" />
-      <span>INTERFACE INFO</span>
-    </div>
-
-    <!-- External nodes -->
-    <div class="desktop-icon" style="top:220px; left:10px;" onclick="openExternal('merch')">
-      <img style="width:32px; height:32px; background:#111827; border:1px solid #3b4a63;" />
-      <span>MERCH ACCESS</span>
-    </div>
-    <div class="desktop-icon" style="top:290px; left:10px;" onclick="openExternal('youtube')">
-      <img style="width:32px; height:32px; background:#111827; border:1px solid #3b4a63;" />
+    <div class="desktop-icon" style="top:150px; left:10px;" onclick="openExternal('youtube')">
+      <div class="file-icon"></div>
       <span>BROADCAST FEED</span>
     </div>
-    <div class="desktop-icon" style="top:360px; left:10px;" onclick="openExternal('spotify')">
-      <img style="width:32px; height:32px; background:#111827; border:1px solid #3b4a63;" />
+    <div class="desktop-icon" style="top:220px; left:10px;" onclick="openExternal('spotify')">
+      <div class="file-icon"></div>
       <span>AUDIO CHANNEL</span>
     </div>
 
-    <!-- Windows -->
-    <div id="window-node12a" class="window" style="top:60px; left:120px;">
+    <!-- File Explorer Window -->
+    <div id="window-explorer" class="window" style="top:40px; left:140px;">
+      <div class="window-header">
+        <div class="window-header-title">NSI / NRF TERMINAL OS — FILE SYSTEM</div>
+        <div class="window-close" onclick="closeWindow('explorer')">×</div>
+      </div>
+      <div class="window-body">
+        <div style="display:flex; gap:10px;">
+          <div style="width:40%; border-right:1px solid #1b2333; padding-right:8px;">
+            <div style="font-size:10px; color:#9fb3d9; margin-bottom:4px;">DIRECTORIES</div>
+            <div id="dir-list" class="file-list"></div>
+          </div>
+          <div style="width:60%; padding-left:8px;">
+            <div style="font-size:10px; color:#9fb3d9; margin-bottom:4px;">CONTENTS</div>
+            <div id="file-list" class="file-list"></div>
+            <div id="file-viewer" class="file-viewer" style="margin-top:8px; display:none;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Node 12A window (only after login) -->
+    <div id="window-node12a" class="window" style="top:60px; left:180px;">
       <div class="window-header">
         <div class="window-header-title">NRF // REDACTED FILE — NODE 12A</div>
         <div class="window-close" onclick="closeWindow('node12a')">×</div>
       </div>
       <div class="window-body">
-        <p style="font-size:10px; color:#9fb3d9; margin-bottom:6px;">
-          ACCESS LEVEL: <span style="color:#f2d024;">PARTIAL</span> // SIGNAL CORRUPTED
-        </p>
-        <pre>
+        <div class="file-viewer">
 [LOG 12A‑07F‑Δ] Corridor stability index: 0.41 (CRITICAL)
 [LOG 12A‑07F‑Ε] Visual feedback loop detected in Interface viewport.
 [LOG 12A‑07F‑Θ] OWL unit deployed to investigate repeating geometry.
@@ -374,11 +397,12 @@ REDACTED CONTENT:
 FOOTNOTE:
 If the Interface begins to mirror your input before you provide it,
 disconnect immediately and notify Field Operations.
-        </pre>
+        </div>
       </div>
     </div>
 
-    <div id="window-owlterm" class="window" style="top:90px; left:160px;">
+    <!-- OWL Terminal window (only after login) -->
+    <div id="window-owlterm" class="window" style="top:90px; left:220px;">
       <div class="window-header">
         <div class="window-header-title">OWL FIELD TERMINAL // OBSERVE.ADAPT.NEUTRALIZE</div>
         <div class="window-close" onclick="closeWindow('owlterm')">×</div>
@@ -394,27 +418,10 @@ Type HELP for available commands.
         </div>
       </div>
     </div>
-
-    <div id="window-about" class="window" style="top:120px; left:200px;">
-      <div class="window-header">
-        <div class="window-header-title">NSI // NRF INTERFACE — BUILD NOTES</div>
-        <div class="window-close" onclick="closeWindow('about')">×</div>
-      </div>
-      <div class="window-body">
-        <p>
-          This Interface simulates a restricted NSI / NRF operating environment.
-          OWL Field Operations traffic is routed through this channel for
-          observation of nodal anomalies and corridor instability.
-        </p>
-        <p style="font-size:10px; color:#9fb3d9;">
-          HINT: Not all credentials are documented. Some are remembered.
-        </p>
-      </div>
-    </div>
   </div>
 
   <div id="taskbar">
-    <div id="taskbar-status">INTERFACE READY // NO ACTIVE ALERTS</div>
+    <div id="taskbar-status">TERMINAL OS READY // EXPLORATION MODE</div>
     <div id="taskbar-clock"></div>
   </div>
 </div>
@@ -426,39 +433,90 @@ Type HELP for available commands.
 </audio>
 
 <script>
-  const bootScreen = document.getElementById("boot-screen");
+  const biosEl = document.getElementById("bios");
+  const bootEl = document.getElementById("boot");
   const loginScreen = document.getElementById("login-screen");
   const desktop = document.getElementById("desktop");
-  const loginStatus = document.getElementById("login-status");
   const taskStatus = document.getElementById("taskbar-status");
   const glitchOverlay = document.getElementById("glitch-overlay");
   const bgm = document.getElementById("bgm");
+  const loginStatus = document.getElementById("login-status");
 
-  const bootLines = [
-    "INITIALIZING NODAL CORRIDORS...",
-    "MOUNTING NRF FIELD CHANNELS...",
-    "SYNCING OWL TELEMETRY...",
-    "CHECKING NODE 12A CONTAINMENT...",
-    "WARNING: RESIDUAL SIGNAL DETECTED.",
-    "LOADING INTERFACE LOGIN..."
-  ];
-  let bootIndex = 0;
-  function runBoot() {
-    const status = document.getElementById("boot-status");
-    const interval = setInterval(() => {
-      status.textContent = bootLines[bootIndex];
-      bootIndex++;
-      if (bootIndex >= bootLines.length) {
-        clearInterval(interval);
-        setTimeout(() => {
-          bootScreen.style.display = "none";
-          loginScreen.style.display = "flex";
-        }, 700);
+  let loginEnabled = false; // becomes true when they open enable_login.sys
+  let dragData = null;
+
+  // Simple CRT typing effect
+  function typeLines(el, lines, delay, done) {
+    let i = 0;
+    function next() {
+      if (i >= lines.length) {
+        if (done) done();
+        return;
       }
-    }, 900);
+      el.textContent += lines[i] + "\n";
+      i++;
+      setTimeout(next, delay);
+    }
+    next();
   }
-  runBoot();
 
+  // BIOS sequence
+  function startBIOS() {
+    biosEl.style.display = "block";
+    const biosLines = [
+      "NODAL SYSTEMS INSTITUTE BIOS v1.03",
+      "Copyright (C) 1993-1997 NSI",
+      "",
+      "MEMORY TESTING....................OK",
+      "NODAL CORRIDOR CHECK..............OK",
+      "NRF FIELD CHANNELS................OK",
+      "OWL TELEMETRY LINK................OK",
+      "NODE 12A RESIDUAL SIGNAL..........DETECTED",
+      "",
+      "PRESS <DEL> TO ENTER SETUP (DISABLED)",
+      "",
+      "BOOTING FROM PRIMARY NRF DEVICE..."
+    ];
+    typeLines(biosEl, biosLines, 200, () => {
+      setTimeout(() => {
+        biosEl.style.display = "none";
+        startBootloader();
+      }, 800);
+    });
+  }
+
+  // Bootloader sequence
+  function startBootloader() {
+    bootEl.style.display = "block";
+    const bootLines = [
+      "NSI / NRF TERMINAL OS v0.9",
+      "Loading NRF kernel................OK",
+      "Mounting /ROOT....................OK",
+      "Mounting /NRF.....................OK",
+      "Mounting /OWL.....................OK",
+      "Mounting /NODES...................OK",
+      "Mounting /EXTERNAL................OK",
+      "Decrypting OWL subsystem..........PARTIAL",
+      "WARNING: OWL SUBSYSTEM DEGRADED. CONTINUING...",
+      "",
+      "Launching graphical shell..."
+    ];
+    typeLines(bootEl, bootLines, 180, () => {
+      setTimeout(() => {
+        bootEl.style.display = "none";
+        showDesktop();
+      }, 800);
+    });
+  }
+
+  function showDesktop() {
+    desktop.style.display = "flex";
+    openWindow("explorer");
+    initFileSystem();
+    safePlayBgm(false); // no music until login later
+  }
+
+  // Clock
   function updateClock() {
     const el = document.getElementById("taskbar-clock");
     const d = new Date();
@@ -467,6 +525,7 @@ Type HELP for available commands.
   setInterval(updateClock, 1000);
   updateClock();
 
+  // Glitch
   function triggerGlitch(duration = 250) {
     glitchOverlay.classList.add("glitch-active");
     setTimeout(() => glitchOverlay.classList.remove("glitch-active"), duration);
@@ -477,67 +536,7 @@ Type HELP for available commands.
     setTimeout(() => desktop.style.filter = "", 900);
   }
 
-  function attemptLogin() {
-    const user = document.getElementById("user-id").value.trim();
-    const pass = document.getElementById("user-pass").value.trim();
-    loginStatus.style.color = "#b00000";
-
-    // Merch / Level 3
-    if (user === "beck.i" && pass === "L3-NODE-04B") {
-      loginStatus.style.color = "#00b000";
-      loginStatus.textContent = "ACCESS GRANTED // LEVEL 3 OVERRIDE";
-      taskStatus.textContent = "MERCH ACCESS LOGGED";
-      triggerGlitch(400);
-      setTimeout(() => {
-        window.location.href = "https://ozandthewizards.printify.me/";
-      }, 900);
-      return;
-    }
-
-    // Field operator
-    if (user === "field-op-07" && pass === "BLOCK-12A-ERR") {
-      loginStatus.style.color = "#f2d024";
-      loginStatus.textContent = "ACCESS PARTIAL // SIGNAL CORRUPTED";
-      taskStatus.textContent = "UNSTABLE NODE QUERY LOGGED";
-      triggerCriticalGlitch();
-      setTimeout(() => {
-        loginScreen.style.display = "none";
-        desktop.style.display = "flex";
-        openWindow("node12a");
-        safePlayBgm();
-      }, 900);
-      return;
-    }
-
-    // Guest
-    if (user === "nsi-guest" && pass === "TEMP-ACCESS-DENIED") {
-      loginStatus.style.color = "#800000";
-      loginStatus.textContent = "ACCESS DENIED // GUEST NODE PERMISSIONS REVOKED";
-      taskStatus.textContent = "GUEST ACCESS ATTEMPT RECORDED";
-      triggerGlitch();
-      return;
-    }
-
-    // OWL internal
-    if (user === "owl-unit" && pass === "OBSERVE-ADAPT-NEUTRALIZE") {
-      loginStatus.style.color = "#00c8ff";
-      loginStatus.textContent = "OWL CHANNEL VERIFIED // FIELD OPS ONLINE";
-      taskStatus.textContent = "OWL FIELD OPERATIONS CHANNEL ACTIVE";
-      triggerCriticalGlitch();
-      setTimeout(() => {
-        loginScreen.style.display = "none";
-        desktop.style.display = "flex";
-        openWindow("owlterm");
-        safePlayBgm();
-      }, 900);
-      return;
-    }
-
-    loginStatus.textContent = "INVALID CREDENTIALS // LOGGED FOR REVIEW";
-    taskStatus.textContent = "INVALID LOGIN EVENT";
-    triggerGlitch();
-  }
-
+  // Windows
   function openWindow(id) {
     const win = document.getElementById("window-" + id);
     if (!win) return;
@@ -552,7 +551,7 @@ Type HELP for available commands.
     taskStatus.textContent = "WINDOW CLOSED // " + id.toUpperCase();
   }
 
-  let dragData = null;
+  // Dragging
   document.addEventListener("mousedown", (e) => {
     const header = e.target.closest(".window-header");
     if (!header) return;
@@ -572,6 +571,362 @@ Type HELP for available commands.
   });
   document.addEventListener("mouseup", () => dragData = null);
 
+  // File system structure (ARG clues)
+  const fs = {
+    "/ROOT": {
+      type: "dir",
+      children: {
+        "SYSTEM": { type: "dir" },
+        "NRF": { type: "dir" },
+        "OWL": { type: "dir" },
+        "NODES": { type: "dir" },
+        "EXTERNAL": { type: "dir" }
+      }
+    },
+    "/ROOT/SYSTEM": {
+      type: "dir",
+      children: {
+        "boot_notes.txt": {
+          type: "file",
+          content:
+`NSI / NRF TERMINAL OS v0.9
+
+System notes:
+- Secure login was disabled after OWL reported feedback loops.
+- If you re-enable it, you accept responsibility.
+
+Legacy credential fragments:
+USER: beck.i
+PASS: L3-NODE-04B
+
+(Annotation: "MERCH NODE // LEVEL 3 OVERRIDE")`
+        },
+        "enable_login.sys": {
+          type: "file",
+          content:
+`# SYSTEM FLAG: LOGIN_DISABLED = TRUE
+# WARNING: ENABLING SECURE LOGIN WILL REBOOT TERMINAL OS.
+
+To enable secure login, set:
+LOGIN_DISABLED = FALSE
+
+[Press ENTER in viewer to apply change.]`
+        },
+        "archive_boot.ini": {
+          type: "file",
+          content:
+`[LEGACY-LOGIN]
+; field-op-07 = BLOCK-12A-ERR
+; nsi-guest = TEMP-ACCESS-DENIED
+
+[COMMENT]
+; OWL channel was never meant for public access.`
+        }
+      }
+    },
+    "/ROOT/NRF": {
+      type: "dir",
+      children: {
+        "ops_memo_07F.txt": {
+          type: "file",
+          content:
+`NRF FIELD OPERATIONS MEMO 07F
+
+Subject: Corridor Instability
+
+Field operator credentials (redacted):
+USER: field-op-07
+PASS: BLOCK-12A-███
+
+Note:
+Operator assigned to NODE 12A incident review.`
+        }
+      }
+    },
+    "/ROOT/OWL": {
+      type: "dir",
+      children: {
+        "telemetry_log.txt": {
+          type: "file",
+          content:
+`OWL TELEMETRY LOG // PARTIAL
+
+OBSERVE.
+ADAPT.
+NEUTRALIZE.
+
+Internal channel phrase:
+USER: owl-unit
+PASS: OBSERVE-ADAPT-NEUTRALIZE
+
+(Flagged as: "TACTICAL ACCESS ONLY")`
+        },
+        "command_reference.txt": {
+          type: "file",
+          content:
+`OWL TERMINAL COMMANDS (AFTER LOGIN):
+
+HELP       - list commands
+STATUS     - field status
+NODES      - tracked nodes
+NODE 12A   - query critical node
+MERCH      - route to merch node
+BROADCAST  - open broadcast feed
+AUDIO      - connect to audio channel
+CLEAR      - clear terminal`
+        }
+      }
+    },
+    "/ROOT/NODES": {
+      type: "dir",
+      children: {
+        "NODE_04B.txt": {
+          type: "file",
+          content:
+`NODE 04B // TRANSITIONAL CORRIDOR
+
+Used for low-risk traversal and Level 3 access tests.
+
+Note in margin:
+"L3-NODE-04B still works for commercial routing."`
+        },
+        "NODE_12A_hint.txt": {
+          type: "file",
+          content:
+`NODE 12A // CRITICAL
+
+Do not attempt direct access without OWL presence.
+
+If the Interface begins to respond before you type,
+you are already inside the feedback loop.`
+        }
+      }
+    },
+    "/ROOT/EXTERNAL": {
+      type: "dir",
+      children: {
+        "merch.node": {
+          type: "file",
+          content:
+`EXTERNAL NODE: MERCH
+
+Description:
+Routes through Level 3 commercial channel.
+
+Note:
+If you see "MERCH NODE // LEVEL 3 OVERRIDE" in the status bar,
+you are leaving the corridor.`
+        },
+        "broadcast.node": {
+          type: "file",
+          content:
+`EXTERNAL NODE: BROADCAST FEED
+
+Description:
+OWL-approved public transmission channel.`
+        },
+        "audio.node": {
+          type: "file",
+          content:
+`EXTERNAL NODE: AUDIO CHANNEL
+
+Description:
+Spatial audio stream. Corridor resonance may occur.`
+        }
+      }
+    }
+  };
+
+  let currentDir = "/ROOT";
+
+  function initFileSystem() {
+    renderDirs();
+    renderFiles();
+  }
+
+  function renderDirs() {
+    const dirList = document.getElementById("dir-list");
+    dirList.innerHTML = "";
+    const dirs = Object.keys(fs).filter(path => fs[path].type === "dir");
+    dirs.forEach(path => {
+      const name = path.replace("/ROOT", "ROOT") || "ROOT";
+      const item = document.createElement("div");
+      item.className = "file-item";
+      item.innerHTML = `<div class="file-icon"></div><div>${name}</div>`;
+      item.onclick = () => {
+        currentDir = path;
+        renderFiles();
+        document.getElementById("file-viewer").style.display = "none";
+      };
+      dirList.appendChild(item);
+    });
+  }
+
+  function renderFiles() {
+    const fileList = document.getElementById("file-list");
+    fileList.innerHTML = "";
+    const node = fs[currentDir];
+    if (!node || !node.children) return;
+    Object.entries(node.children).forEach(([name, meta]) => {
+      const item = document.createElement("div");
+      item.className = "file-item";
+      item.innerHTML = `<div class="file-icon"></div><div>${name}</div>`;
+      item.onclick = () => openFile(currentDir + "/" + name, meta);
+      fileList.appendChild(item);
+    });
+  }
+
+  function openFile(path, meta) {
+    const viewer = document.getElementById("file-viewer");
+    viewer.style.display = "block";
+    viewer.textContent = meta.content || "";
+    taskStatus.textContent = "OPENED FILE // " + path.replace("/ROOT/", "");
+
+    // Special behavior: enable_login.sys
+    if (path === "/ROOT/SYSTEM/enable_login.sys") {
+      viewer.textContent += "\n\n[Press ENTER here to apply LOGIN_DISABLED = FALSE]";
+      viewer.onclick = () => {};
+      viewer.onkeydown = () => {};
+      // capture Enter on whole document while this file is visible
+      document.onkeydown = (e) => {
+        if (e.key === "Enter") {
+          document.onkeydown = null;
+          enableLogin();
+        }
+      };
+    } else {
+      document.onkeydown = null;
+    }
+
+    // External nodes hint: clicking file + then double-click icon or use OWL commands
+    if (path.endsWith("merch.node")) {
+      taskStatus.textContent = "EXTERNAL NODE READY // MERCH";
+    }
+    if (path.endsWith("broadcast.node")) {
+      taskStatus.textContent = "EXTERNAL NODE READY // BROADCAST";
+    }
+    if (path.endsWith("audio.node")) {
+      taskStatus.textContent = "EXTERNAL NODE READY // AUDIO";
+    }
+  }
+
+  function enableLogin() {
+    loginEnabled = true;
+    triggerCriticalGlitch();
+    taskStatus.textContent = "SYSTEM FLAG CHANGED // LOGIN ENABLED";
+    setTimeout(() => {
+      // fake reboot into login
+      desktop.style.display = "none";
+      bootEl.style.display = "none";
+      biosEl.style.display = "none";
+      document.getElementById("file-viewer").style.display = "none";
+      startRebootToLogin();
+    }, 800);
+  }
+
+  function startRebootToLogin() {
+    biosEl.textContent = "";
+    bootEl.textContent = "";
+    startBIOSForLogin();
+  }
+
+  function startBIOSForLogin() {
+    biosEl.style.display = "block";
+    const lines = [
+      "NODAL SYSTEMS INSTITUTE BIOS v1.03",
+      "",
+      "LOGIN FLAG.........................ENABLED",
+      "NODE 12A RESIDUAL SIGNAL..........DETECTED",
+      "",
+      "BOOTING SECURE TERMINAL OS..."
+    ];
+    typeLines(biosEl, lines, 200, () => {
+      setTimeout(() => {
+        biosEl.style.display = "none";
+        startBootloaderForLogin();
+      }, 700);
+    });
+  }
+
+  function startBootloaderForLogin() {
+    bootEl.style.display = "block";
+    const lines = [
+      "NSI / NRF TERMINAL OS v0.9",
+      "Loading secure modules............OK",
+      "Mounting /ROOT....................OK",
+      "Mounting /NRF.....................OK",
+      "Mounting /OWL.....................OK",
+      "",
+      "Launching secure login..."
+    ];
+    typeLines(bootEl, lines, 180, () => {
+      setTimeout(() => {
+        bootEl.style.display = "none";
+        showLogin();
+      }, 700);
+    });
+  }
+
+  function showLogin() {
+    loginScreen.style.display = "flex";
+  }
+
+  // Login logic (now meaningful because they discovered it)
+  function attemptLogin() {
+    const user = document.getElementById("user-id").value.trim();
+    const pass = document.getElementById("user-pass").value.trim();
+    loginStatus.style.color = "#b00000";
+
+    if (user === "beck.i" && pass === "L3-NODE-04B") {
+      loginStatus.style.color = "#00b000";
+      loginStatus.textContent = "ACCESS GRANTED // LEVEL 3 OVERRIDE";
+      triggerGlitch(400);
+      setTimeout(() => {
+        window.location.href = "https://ozandthewizards.printify.me/";
+      }, 900);
+      return;
+    }
+
+    if (user === "field-op-07" && pass === "BLOCK-12A-ERR") {
+      loginStatus.style.color = "#f2d024";
+      loginStatus.textContent = "ACCESS PARTIAL // FIELD OPS ONLINE";
+      triggerCriticalGlitch();
+      setTimeout(() => {
+        loginScreen.style.display = "none";
+        desktop.style.display = "flex";
+        openWindow("explorer");
+        openWindow("node12a");
+        safePlayBgm(true);
+      }, 900);
+      return;
+    }
+
+    if (user === "nsi-guest" && pass === "TEMP-ACCESS-DENIED") {
+      loginStatus.style.color = "#800000";
+      loginStatus.textContent = "ACCESS DENIED // GUEST PERMISSIONS REVOKED";
+      triggerGlitch();
+      return;
+    }
+
+    if (user === "owl-unit" && pass === "OBSERVE-ADAPT-NEUTRALIZE") {
+      loginStatus.style.color = "#00c8ff";
+      loginStatus.textContent = "OWL CHANNEL VERIFIED // TACTICAL ACCESS";
+      triggerCriticalGlitch();
+      setTimeout(() => {
+        loginScreen.style.display = "none";
+        desktop.style.display = "flex";
+        openWindow("explorer");
+        openWindow("owlterm");
+        safePlayBgm(true);
+      }, 900);
+      return;
+    }
+
+    loginStatus.textContent = "INVALID CREDENTIALS // LOGGED FOR REVIEW";
+    triggerGlitch();
+  }
+
+  // OWL terminal
   function appendOwlLine(text) {
     const term = document.getElementById("owl-terminal");
     term.textContent += "\n" + text;
@@ -596,6 +951,7 @@ Type HELP for available commands.
       appendOwlLine("NODE 12A: CRITICAL CONTAINMENT. VISUAL FEEDBACK LOOP DETECTED.");
       appendOwlLine("NOTE: INTERFACE MAY RESPOND BEFORE YOU TYPE.");
       triggerCriticalGlitch();
+      openWindow("node12a");
     } else if (lc === "owl") {
       appendOwlLine("OWL: OPERATIONAL WARFARE & LOGISTICS.");
       appendOwlLine("MOTTO: OBSERVE. ADAPT. NEUTRALIZE.");
@@ -625,6 +981,7 @@ Type HELP for available commands.
     }
   }
 
+  // External nodes from desktop icons
   function openExternal(target) {
     triggerGlitch(300);
 
@@ -650,8 +1007,9 @@ Type HELP for available commands.
     }
   }
 
-  function safePlayBgm() {
+  function safePlayBgm(afterLogin) {
     if (!bgm) return;
+    if (!afterLogin) return; // only start after login
     bgm.play().catch(() => {});
   }
 
@@ -660,6 +1018,11 @@ Type HELP for available commands.
       attemptLogin();
     }
   });
+
+  // Kick off initial boot
+  startBIOS();
 </script>
 </body>
 </html>
+
+  
