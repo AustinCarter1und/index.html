@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>NSI / NRF TERMINAL OS</title>
+<title>NSI / NRF TERMINAL INTERFACE</title>
 <style>
   * { box-sizing: border-box; }
   body {
@@ -13,7 +13,7 @@
     overflow: hidden;
   }
 
-  /* CRT + noise */
+  /* Global CRT + noise */
   body::before {
     content: "";
     position: fixed;
@@ -32,7 +32,40 @@
     pointer-events: none;
   }
 
-  #bios, #boot, #login-screen, #desktop {
+  /* Intro screen */
+  #intro {
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(circle at 50% 0%, #02040a 0, #000000 60%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #cfd6e6;
+    text-align: center;
+  }
+  #intro-title {
+    font-size: 14px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    color: #f5f5f5;
+  }
+  #intro-sub {
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #9fb3d9;
+    margin-bottom: 30px;
+  }
+  #intro-hint {
+    font-size: 10px;
+    color: #6c7a96;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+  }
+
+  #bios, #boot, #desktop {
     position: fixed;
     inset: 0;
     display: none;
@@ -57,75 +90,6 @@
     font-size: 12px;
   }
 
-  /* Login window (only after they enable it) */
-  #login-screen {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .login-panel {
-    width: 360px;
-    background: rgba(4, 8, 18, 0.96);
-    border: 1px solid #3b4a63;
-    box-shadow: 0 0 0 1px #0b101c, 0 18px 40px rgba(0,0,0,0.8);
-    padding: 18px 20px 16px;
-  }
-  .login-title {
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.16em;
-    color: #9fb3d9;
-    margin-bottom: 10px;
-  }
-  .login-sub {
-    font-size: 10px;
-    color: #7f8aa3;
-    margin-bottom: 14px;
-  }
-  .login-field {
-    margin-bottom: 10px;
-  }
-  .login-field label {
-    display: block;
-    font-size: 10px;
-    margin-bottom: 2px;
-    color: #9fb3d9;
-  }
-  .login-field input {
-    width: 100%;
-    padding: 4px 6px;
-    font-size: 11px;
-    background: #050814;
-    border: 1px solid #3b4a63;
-    color: #e5e5e5;
-  }
-  .login-btn {
-    margin-top: 8px;
-    width: 100%;
-    padding: 5px 0;
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    border: 1px solid #3b4a63;
-    background: linear-gradient(#111827, #050814);
-    color: #cfd6e6;
-    cursor: pointer;
-  }
-  .login-btn:hover {
-    background: linear-gradient(#1b2333, #050814);
-  }
-  #login-status {
-    margin-top: 8px;
-    font-size: 10px;
-    color: #b00000;
-    min-height: 12px;
-  }
-  .login-hint {
-    margin-top: 6px;
-    font-size: 9px;
-    color: #6c7a96;
-  }
-
   /* Desktop OS */
   #desktop {
     display: none;
@@ -135,6 +99,11 @@
     flex: 1;
     position: relative;
     padding: 8px;
+    background: #000;
+    background-image: url("owl-background.png"); /* <- replace with your image */
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
   }
   #taskbar {
     height: 24px;
@@ -154,12 +123,11 @@
     opacity: 0.8;
   }
 
-  /* File explorer style */
   .window {
     position: absolute;
     width: 460px;
     min-height: 200px;
-    background: #050814;
+    background: rgba(5, 8, 20, 0.96);
     border: 1px solid #3b4a63;
     box-shadow: 0 18px 40px rgba(0,0,0,0.8);
     display: none;
@@ -234,6 +202,7 @@
   .desktop-icon span {
     display: block;
     margin-top: 4px;
+    text-shadow: 0 0 4px #000;
   }
 
   .terminal {
@@ -303,52 +272,44 @@
 </head>
 <body>
 
+<!-- INTRO / STARTUP SCREEN -->
+<div id="intro">
+  <div id="intro-title">NODAL SYSTEMS INSTITUTE</div>
+  <div id="intro-sub">NRF FIELD OPERATIONS INTERFACE</div>
+  <div id="intro-hint">PRESS ANY KEY OR CLICK TO INITIALIZE TERMINAL</div>
+</div>
+
 <!-- BIOS SCREEN -->
 <div id="bios"></div>
 
 <!-- BOOTLOADER SCREEN -->
 <div id="boot"></div>
 
-<!-- LOGIN (only appears after they enable it) -->
-<div id="login-screen">
-  <div class="login-panel">
-    <div class="login-title">NSI // NRF SECURE LOGIN</div>
-    <div class="login-sub">OWL FIELD OPERATIONS CHANNEL</div>
-
-    <div class="login-field">
-      <label for="user-id">USER ID</label>
-      <input id="user-id" autocomplete="off" />
-    </div>
-    <div class="login-field">
-      <label for="user-pass">ACCESS KEY</label>
-      <input id="user-pass" type="password" autocomplete="off" />
-    </div>
-    <button class="login-btn" onclick="attemptLogin()">ENGAGE INTERFACE</button>
-    <div id="login-status"></div>
-    <div class="login-hint">
-      Secure login was previously disabled at the system level.<br />
-      You re‑enabled it. That means you accept the risk.
-    </div>
-  </div>
-</div>
-
 <!-- DESKTOP OS -->
 <div id="desktop">
   <div id="desktop-area">
-    <!-- Desktop icons: file explorer + external nodes -->
+    <!-- Desktop icons -->
     <div class="desktop-icon" style="top:10px; left:10px;" onclick="openWindow('explorer')">
       <div class="file-icon"></div>
       <span>FILE SYSTEM</span>
     </div>
-    <div class="desktop-icon" style="top:80px; left:10px;" onclick="openExternal('merch')">
+    <div class="desktop-icon" style="top:80px; left:10px;" onclick="openWindow('owlterm')">
+      <div class="file-icon"></div>
+      <span>OWL TERMINAL</span>
+    </div>
+    <div class="desktop-icon" style="top:150px; left:10px;" onclick="openWindow('node12a')">
+      <div class="file-icon"></div>
+      <span>NODE 12A FILE</span>
+    </div>
+    <div class="desktop-icon" style="top:220px; left:10px;" onclick="openExternal('merch')">
       <div class="file-icon"></div>
       <span>MERCH NODE</span>
     </div>
-    <div class="desktop-icon" style="top:150px; left:10px;" onclick="openExternal('youtube')">
+    <div class="desktop-icon" style="top:290px; left:10px;" onclick="openExternal('youtube')">
       <div class="file-icon"></div>
       <span>BROADCAST FEED</span>
     </div>
-    <div class="desktop-icon" style="top:220px; left:10px;" onclick="openExternal('spotify')">
+    <div class="desktop-icon" style="top:360px; left:10px;" onclick="openExternal('spotify')">
       <div class="file-icon"></div>
       <span>AUDIO CHANNEL</span>
     </div>
@@ -374,7 +335,7 @@
       </div>
     </div>
 
-    <!-- Node 12A window (only after login) -->
+    <!-- Node 12A window -->
     <div id="window-node12a" class="window" style="top:60px; left:180px;">
       <div class="window-header">
         <div class="window-header-title">NRF // REDACTED FILE — NODE 12A</div>
@@ -401,7 +362,7 @@ disconnect immediately and notify Field Operations.
       </div>
     </div>
 
-    <!-- OWL Terminal window (only after login) -->
+    <!-- OWL Terminal window -->
     <div id="window-owlterm" class="window" style="top:90px; left:220px;">
       <div class="window-header">
         <div class="window-header-title">OWL FIELD TERMINAL // OBSERVE.ADAPT.NEUTRALIZE</div>
@@ -433,19 +394,28 @@ Type HELP for available commands.
 </audio>
 
 <script>
+  const introEl = document.getElementById("intro");
   const biosEl = document.getElementById("bios");
   const bootEl = document.getElementById("boot");
-  const loginScreen = document.getElementById("login-screen");
   const desktop = document.getElementById("desktop");
   const taskStatus = document.getElementById("taskbar-status");
   const glitchOverlay = document.getElementById("glitch-overlay");
   const bgm = document.getElementById("bgm");
-  const loginStatus = document.getElementById("login-status");
-
-  let loginEnabled = false; // becomes true when they open enable_login.sys
   let dragData = null;
+  let bootStarted = false;
 
-  // Simple CRT typing effect
+  // Intro -> BIOS
+  function startSequence() {
+    if (bootStarted) return;
+    bootStarted = true;
+    introEl.style.display = "none";
+    startBIOS();
+  }
+
+  document.addEventListener("keydown", startSequence);
+  document.addEventListener("click", startSequence);
+
+  // CRT typing effect
   function typeLines(el, lines, delay, done) {
     let i = 0;
     function next() {
@@ -513,7 +483,7 @@ Type HELP for available commands.
     desktop.style.display = "flex";
     openWindow("explorer");
     initFileSystem();
-    safePlayBgm(false); // no music until login later
+    safePlayBgm(false);
   }
 
   // Clock
@@ -593,24 +563,13 @@ Type HELP for available commands.
 
 System notes:
 - Secure login was disabled after OWL reported feedback loops.
-- If you re-enable it, you accept responsibility.
+- Credentials remain in the archive for operators who remember.
 
 Legacy credential fragments:
 USER: beck.i
 PASS: L3-NODE-04B
 
 (Annotation: "MERCH NODE // LEVEL 3 OVERRIDE")`
-        },
-        "enable_login.sys": {
-          type: "file",
-          content:
-`# SYSTEM FLAG: LOGIN_DISABLED = TRUE
-# WARNING: ENABLING SECURE LOGIN WILL REBOOT TERMINAL OS.
-
-To enable secure login, set:
-LOGIN_DISABLED = FALSE
-
-[Press ENTER in viewer to apply change.]`
         },
         "archive_boot.ini": {
           type: "file",
@@ -664,7 +623,7 @@ PASS: OBSERVE-ADAPT-NEUTRALIZE
         "command_reference.txt": {
           type: "file",
           content:
-`OWL TERMINAL COMMANDS (AFTER LOGIN):
+`OWL TERMINAL COMMANDS:
 
 HELP       - list commands
 STATUS     - field status
@@ -781,24 +740,8 @@ Spatial audio stream. Corridor resonance may occur.`
     viewer.style.display = "block";
     viewer.textContent = meta.content || "";
     taskStatus.textContent = "OPENED FILE // " + path.replace("/ROOT/", "");
+    triggerGlitch(120);
 
-    // Special behavior: enable_login.sys
-    if (path === "/ROOT/SYSTEM/enable_login.sys") {
-      viewer.textContent += "\n\n[Press ENTER here to apply LOGIN_DISABLED = FALSE]";
-      viewer.onclick = () => {};
-      viewer.onkeydown = () => {};
-      // capture Enter on whole document while this file is visible
-      document.onkeydown = (e) => {
-        if (e.key === "Enter") {
-          document.onkeydown = null;
-          enableLogin();
-        }
-      };
-    } else {
-      document.onkeydown = null;
-    }
-
-    // External nodes hint: clicking file + then double-click icon or use OWL commands
     if (path.endsWith("merch.node")) {
       taskStatus.textContent = "EXTERNAL NODE READY // MERCH";
     }
@@ -808,122 +751,6 @@ Spatial audio stream. Corridor resonance may occur.`
     if (path.endsWith("audio.node")) {
       taskStatus.textContent = "EXTERNAL NODE READY // AUDIO";
     }
-  }
-
-  function enableLogin() {
-    loginEnabled = true;
-    triggerCriticalGlitch();
-    taskStatus.textContent = "SYSTEM FLAG CHANGED // LOGIN ENABLED";
-    setTimeout(() => {
-      // fake reboot into login
-      desktop.style.display = "none";
-      bootEl.style.display = "none";
-      biosEl.style.display = "none";
-      document.getElementById("file-viewer").style.display = "none";
-      startRebootToLogin();
-    }, 800);
-  }
-
-  function startRebootToLogin() {
-    biosEl.textContent = "";
-    bootEl.textContent = "";
-    startBIOSForLogin();
-  }
-
-  function startBIOSForLogin() {
-    biosEl.style.display = "block";
-    const lines = [
-      "NODAL SYSTEMS INSTITUTE BIOS v1.03",
-      "",
-      "LOGIN FLAG.........................ENABLED",
-      "NODE 12A RESIDUAL SIGNAL..........DETECTED",
-      "",
-      "BOOTING SECURE TERMINAL OS..."
-    ];
-    typeLines(biosEl, lines, 200, () => {
-      setTimeout(() => {
-        biosEl.style.display = "none";
-        startBootloaderForLogin();
-      }, 700);
-    });
-  }
-
-  function startBootloaderForLogin() {
-    bootEl.style.display = "block";
-    const lines = [
-      "NSI / NRF TERMINAL OS v0.9",
-      "Loading secure modules............OK",
-      "Mounting /ROOT....................OK",
-      "Mounting /NRF.....................OK",
-      "Mounting /OWL.....................OK",
-      "",
-      "Launching secure login..."
-    ];
-    typeLines(bootEl, lines, 180, () => {
-      setTimeout(() => {
-        bootEl.style.display = "none";
-        showLogin();
-      }, 700);
-    });
-  }
-
-  function showLogin() {
-    loginScreen.style.display = "flex";
-  }
-
-  // Login logic (now meaningful because they discovered it)
-  function attemptLogin() {
-    const user = document.getElementById("user-id").value.trim();
-    const pass = document.getElementById("user-pass").value.trim();
-    loginStatus.style.color = "#b00000";
-
-    if (user === "beck.i" && pass === "L3-NODE-04B") {
-      loginStatus.style.color = "#00b000";
-      loginStatus.textContent = "ACCESS GRANTED // LEVEL 3 OVERRIDE";
-      triggerGlitch(400);
-      setTimeout(() => {
-        window.location.href = "https://ozandthewizards.printify.me/";
-      }, 900);
-      return;
-    }
-
-    if (user === "field-op-07" && pass === "BLOCK-12A-ERR") {
-      loginStatus.style.color = "#f2d024";
-      loginStatus.textContent = "ACCESS PARTIAL // FIELD OPS ONLINE";
-      triggerCriticalGlitch();
-      setTimeout(() => {
-        loginScreen.style.display = "none";
-        desktop.style.display = "flex";
-        openWindow("explorer");
-        openWindow("node12a");
-        safePlayBgm(true);
-      }, 900);
-      return;
-    }
-
-    if (user === "nsi-guest" && pass === "TEMP-ACCESS-DENIED") {
-      loginStatus.style.color = "#800000";
-      loginStatus.textContent = "ACCESS DENIED // GUEST PERMISSIONS REVOKED";
-      triggerGlitch();
-      return;
-    }
-
-    if (user === "owl-unit" && pass === "OBSERVE-ADAPT-NEUTRALIZE") {
-      loginStatus.style.color = "#00c8ff";
-      loginStatus.textContent = "OWL CHANNEL VERIFIED // TACTICAL ACCESS";
-      triggerCriticalGlitch();
-      setTimeout(() => {
-        loginScreen.style.display = "none";
-        desktop.style.display = "flex";
-        openWindow("explorer");
-        openWindow("owlterm");
-        safePlayBgm(true);
-      }, 900);
-      return;
-    }
-
-    loginStatus.textContent = "INVALID CREDENTIALS // LOGGED FOR REVIEW";
-    triggerGlitch();
   }
 
   // OWL terminal
@@ -1009,18 +836,9 @@ Spatial audio stream. Corridor resonance may occur.`
 
   function safePlayBgm(afterLogin) {
     if (!bgm) return;
-    if (!afterLogin) return; // only start after login
+    if (!afterLogin) return;
     bgm.play().catch(() => {});
   }
-
-  document.addEventListener("keydown", (e) => {
-    if (loginScreen.style.display === "flex" && e.key === "Enter") {
-      attemptLogin();
-    }
-  });
-
-  // Kick off initial boot
-  startBIOS();
 </script>
 </body>
 </html>
